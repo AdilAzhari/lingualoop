@@ -6,7 +6,9 @@ use App\Models\SeFlashcard;
 use App\Models\SeFlashcardProgress;
 use App\Models\SePrompt;
 use App\Models\SeSession;
+use App\Services\GeminiClient;
 use App\Services\SE\SeGrader;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -46,6 +48,48 @@ class SeController extends Controller
                 'best_speaking' => $bestByPrompt[$p->id]['speaking'] ?? null,
             ]),
         ]);
+    }
+
+    /** POST /software/ai-suggest — generate a topic suggestion via Gemini */
+    public function aiSuggest(Request $request): JsonResponse
+    {
+        $recentCategories = SeSession::where('user_id', auth()->id())
+            ->latest()
+            ->limit(10)
+            ->with('prompt:id,category,title')
+            ->get()
+            ->map(fn ($s) => $s->prompt?->title)
+            ->filter()
+            ->implode(', ');
+
+        $avoidClause = $recentCategories
+            ? "Avoid repeating these recent topics: {$recentCategories}."
+            : '';
+
+        $systemPrompt = <<<PROMPT
+You are a senior software engineer designing interview practice questions.
+Generate one software engineering practice prompt.
+{$avoidClause}
+
+Return ONLY a valid JSON object:
+{
+  "title": "concise prompt title (max 12 words)",
+  "category": "one of: system-design, architecture, use-cases, real-world",
+  "difficulty": "one of: junior, mid, senior, staff",
+  "description": "the full question or scenario (2-4 sentences)",
+  "context": "optional constraints or context (1-2 sentences, or empty string)",
+  "key_concepts": ["concept 1", "concept 2", "concept 3", "concept 4", "concept 5"],
+  "framework_hints": ["hint 1", "hint 2"],
+  "mode": "both"
+}
+PROMPT;
+
+        try {
+            $data = GeminiClient::json($systemPrompt, 20);
+            return response()->json(['suggestion' => $data]);
+        } catch (\Throwable) {
+            return response()->json(['suggestion' => null], 500);
+        }
     }
 
     /** POST /software — create a user-defined prompt */

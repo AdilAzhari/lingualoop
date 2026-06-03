@@ -123,6 +123,7 @@ class SpeakingController extends Controller
             'headline'           => $result->headline,
             'overall_note'       => $result->overallNote,
             'collocation_errors' => $result->collocationErrors,
+            'improvement_tips'   => $result->improvementTips,
             'duration_seconds'   => $result->durationSeconds,
             'graded_at'          => now(),
         ]);
@@ -291,6 +292,7 @@ PROMPT;
                 'headline'        => $session->headline        ?? ['primary' => 'Feedback', 'secondary' => ''],
                 'overall_note'       => $session->overall_note,
                 'collocation_errors' => $session->collocation_errors ?? [],
+                'improvement_tips'   => $session->improvement_tips   ?? [],
                 'duration_seconds'   => $session->duration_seconds,
                 'graded_at'          => $session->graded_at?->toIso8601String(),
             ],

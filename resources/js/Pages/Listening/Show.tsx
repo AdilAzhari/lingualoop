@@ -15,6 +15,7 @@ type PlayState = 'idle' | 'playing' | 'paused' | 'done' | 'error';
 function AudioPlayer({ audioScript }: { audioScript: string }) {
     const uttRef = useRef<SpeechSynthesisUtterance | null>(null);
     const [playState, setPlayState] = useState<PlayState>('idle');
+    const [rate, setRate] = useState(0.92);
 
     useEffect(() => {
         return () => { window.speechSynthesis?.cancel(); };
@@ -22,7 +23,7 @@ function AudioPlayer({ audioScript }: { audioScript: string }) {
 
     function makeUtterance(): SpeechSynthesisUtterance {
         const utt = new SpeechSynthesisUtterance(audioScript);
-        utt.rate  = 0.92;
+        utt.rate  = rate;
         utt.pitch = 1.0;
 
         // Pick an American English voice if available
@@ -71,8 +72,12 @@ function AudioPlayer({ audioScript }: { audioScript: string }) {
         error:   'Could not load audio',
     };
 
+    const SPEEDS = [0.75, 0.92, 1.1, 1.25];
+    const SPEED_LABELS: Record<number, string> = { 0.75: '0.75×', 0.92: '1×', 1.1: '1.1×', 1.25: '1.25×' };
+
     return (
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
             {(playState === 'idle' || playState === 'error') && (
                 <button onClick={play} className="btn" style={{ fontSize: 13 }}>
                     ▶ Play recording
@@ -106,6 +111,21 @@ function AudioPlayer({ audioScript }: { audioScript: string }) {
             <span className="label-mono" style={{ fontSize: 10, color: playState === 'error' ? 'var(--signal)' : 'var(--ink-4)' }}>
                 {statusLabel[playState]}
             </span>
+        </div>
+        {/* Speed control */}
+        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+            <span className="label-mono" style={{ fontSize: 9.5, color: 'var(--ink-4)', marginRight: 4 }}>Speed</span>
+            {SPEEDS.map((s) => (
+                <button
+                    key={s}
+                    onClick={() => { setRate(s); if (playState === 'playing') { window.speechSynthesis.cancel(); setTimeout(play, 50); } }}
+                    className={rate === s ? 'btn' : 'btn btn-ghost'}
+                    style={{ fontSize: 11, padding: '4px 10px' }}
+                >
+                    {SPEED_LABELS[s]}
+                </button>
+            ))}
+        </div>
         </div>
     );
 }

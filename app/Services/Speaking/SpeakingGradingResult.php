@@ -16,6 +16,8 @@ class SpeakingGradingResult
         public ?int    $durationSeconds,
         /** @var array<int,array{original:string,correction:string,note:string}> */
         public array   $collocationErrors = [],
+        /** @var string[] */
+        public array   $improvementTips = [],
     ) {}
 
     public static function fromArray(array $data, ?int $durationSeconds = null): self
@@ -27,7 +29,8 @@ class SpeakingGradingResult
             headline:          $data['headline']          ?? ['primary' => 'Feedback', 'secondary' => ''],
             overallNote:       $data['overall_note']      ?? '',
             durationSeconds:   $durationSeconds,
-            collocationErrors: $data['collocation_errors'] ?? [],
+            collocationErrors: $data['collocation_errors']  ?? [],
+            improvementTips:   $data['improvement_tips']    ?? [],
         );
     }
 }

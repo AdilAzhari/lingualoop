@@ -272,6 +272,7 @@ export type SpeakingFeedbackProps = {
         headline: { primary: string; secondary: string };
         overall_note: string;
         collocation_errors: Array<{ original: string; correction: string; note: string }>;
+        improvement_tips: string[];
         duration_seconds: number | null;
         graded_at: string;
     };

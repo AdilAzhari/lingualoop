@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppShell from '@/Components/Layout/AppShell';
 import Page from '@/Components/Layout/Page';
@@ -7,7 +8,57 @@ import Marginalia from '@/Components/Typography/Marginalia';
 import ScoreArc from '@/Components/Common/ScoreArc';
 import BandBadge from '@/Components/Common/BandBadge';
 import { Ico } from '@/Components/Common/icons';
-import type { ImageFeedbackProps, ImageDimension } from '@/lib/types';
+import type { ImageFeedbackProps, ImageDimension, CollocationError } from '@/lib/types';
+
+function getCsrf() {
+    return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
+}
+
+function CollocationSection({ errors, label }: { errors: CollocationError[]; label: string }) {
+    const [saved, setSaved] = useState<Set<number>>(new Set());
+
+    async function save(i: number, e: CollocationError) {
+        await fetch('/vocabulary', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': getCsrf(), 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ word: e.correction, definition: `Correct form of: "${e.original}"`, level: 'b2' }),
+        });
+        setSaved(prev => new Set([...prev, i]));
+    }
+
+    return (
+        <section style={{ marginBottom: 56 }}>
+            <SectionHeader label="Collocation check" />
+            <div className="card" style={{ padding: '28px 32px' }}>
+                <div className="label-mono" style={{ fontSize: 9.5, color: 'var(--ink-4)', marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    Natural word pairings to practise
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {errors.map((e, i) => (
+                        <div key={i} style={{ paddingBottom: 16, borderBottom: i < errors.length - 1 ? '0.5px solid var(--hairline)' : 'none' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 12, alignItems: 'start' }}>
+                                <div>
+                                    <div className="label-mono" style={{ fontSize: 9, color: 'var(--signal)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+                                    <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-2)', textDecoration: 'line-through', textDecorationColor: 'var(--signal)' }}>{e.original}</span>
+                                </div>
+                                <div>
+                                    <div className="label-mono" style={{ fontSize: 9, color: 'var(--progress)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>natural English</div>
+                                    <span style={{ fontFamily: 'var(--serif)', fontWeight: 500, fontSize: 14, color: 'var(--ink)' }}>{e.correction}</span>
+                                </div>
+                                <button onClick={() => !saved.has(i) && save(i, e)} disabled={saved.has(i)}
+                                    title={saved.has(i) ? 'Saved' : 'Save to vocabulary notebook'}
+                                    style={{ background: 'none', border: 'none', cursor: saved.has(i) ? 'default' : 'pointer', fontSize: 16, fontWeight: 600, color: saved.has(i) ? 'oklch(0.55 0.15 145)' : 'var(--ink-3)', paddingTop: 18, lineHeight: 1 }}>
+                                    {saved.has(i) ? '✓' : '+'}
+                                </button>
+                            </div>
+                            <Marginalia style={{ fontSize: 13, marginTop: 8 }}>{e.note}</Marginalia>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
 
 function scoreColor(s: number) {
     if (s >= 80) return 'var(--progress)';
@@ -104,39 +155,10 @@ export default function ImageFeedback({ prompt, session }: ImageFeedbackProps) {
 
                 {/* Section 3 — collocation errors */}
                 {session.collocation_errors.length > 0 && (
-                    <section style={{ marginBottom: 56 }}>
-                        <SectionHeader label="Collocation check" />
-                        <div className="card" style={{ padding: '28px 32px' }}>
-                            <div className="label-mono" style={{ fontSize: 9.5, color: 'var(--ink-4)', marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                Natural word pairings to practise
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                {session.collocation_errors.map((e, i) => (
-                                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, paddingBottom: 16, borderBottom: i < session.collocation_errors.length - 1 ? '0.5px solid var(--hairline)' : 'none' }}>
-                                        <div>
-                                            <div className="label-mono" style={{ fontSize: 9, color: 'var(--signal)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                                {isWriting ? 'you wrote' : 'you said'}
-                                            </div>
-                                            <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-2)', textDecoration: 'line-through', textDecorationColor: 'var(--signal)' }}>
-                                                {e.original}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <div className="label-mono" style={{ fontSize: 9, color: 'var(--progress)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                                natural English
-                                            </div>
-                                            <span style={{ fontFamily: 'var(--serif)', fontWeight: 500, fontSize: 14, color: 'var(--ink)' }}>
-                                                {e.correction}
-                                            </span>
-                                        </div>
-                                        <div style={{ gridColumn: '1 / -1' }}>
-                                            <Marginalia style={{ fontSize: 13, marginTop: 2 }}>{e.note}</Marginalia>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
+                    <CollocationSection
+                        errors={session.collocation_errors}
+                        label={isWriting ? 'you wrote' : 'you said'}
+                    />
                 )}
 
                 {/* Section 4 — key features missed */}
@@ -189,9 +211,26 @@ export default function ImageFeedback({ prompt, session }: ImageFeedbackProps) {
                     </section>
                 )}
 
+                {/* Retry nudge for low scores */}
+                {session.overall < 60 && (
+                    <div className="card" style={{ padding: '20px 24px', marginBottom: 32, background: 'var(--signal-wash)', border: '0.5px solid oklch(0.85 0.06 25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+                            <div>
+                                <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, color: 'var(--ink)', margin: '0 0 4px' }}>This one's worth another go.</p>
+                                <p style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--ink-3)', margin: 0 }}>
+                                    Review the key features above, then describe the image again — the second attempt is usually much stronger.
+                                </p>
+                            </div>
+                            <Link href={`/images/${prompt.id}`} className="btn" style={{ flexShrink: 0, background: 'var(--signal)', borderColor: 'var(--signal)' }}>
+                                Try again <Ico.arrow />
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 {/* Footer actions */}
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-                    <Link href={`/images/${prompt.id}`} className="btn btn-ghost">Try again</Link>
+                    {session.overall >= 60 && <Link href={`/images/${prompt.id}`} className="btn btn-ghost">Try again</Link>}
                     <Link href="/images" className="btn btn-ghost">All prompts <Ico.arrow /></Link>
                 </div>
             </Page>

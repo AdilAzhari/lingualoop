@@ -10,13 +10,14 @@ class SpeakingSession extends Model
     protected $fillable = [
         'user_id', 'prompt_id', 'status', 'audio_path', 'audio_mime',
         'transcript', 'score_fluency', 'score_vocabulary', 'score_grammar', 'score_pronunciation',
-        'dimension_notes', 'headline', 'overall_note', 'collocation_errors', 'duration_seconds', 'graded_at',
+        'dimension_notes', 'headline', 'overall_note', 'collocation_errors', 'improvement_tips', 'duration_seconds', 'graded_at',
     ];
 
     protected $casts = [
         'dimension_notes'    => 'array',
         'headline'           => 'array',
         'collocation_errors' => 'array',
+        'improvement_tips'   => 'array',
         'graded_at'          => 'datetime',
     ];
 

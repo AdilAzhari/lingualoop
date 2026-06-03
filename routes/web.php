@@ -87,6 +87,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/software', [SeController::class, 'index'])->name('se.index');
     Route::post('/software', [SeController::class, 'storePrompt'])->name('se.store-prompt');
+    Route::post('/software/ai-suggest', [SeController::class, 'aiSuggest'])->name('se.ai-suggest');
     Route::get('/software/flashcards', [SeController::class, 'flashcards'])->name('se.flashcards');
     Route::post('/software/flashcards/{progress}/answer', [SeController::class, 'flashcardAnswer'])->whereNumber('progress')->name('se.flashcard-answer');
     Route::get('/software/sessions/{session}/audio', [SeController::class, 'audio'])->whereNumber('session')->name('se.sessions.audio');

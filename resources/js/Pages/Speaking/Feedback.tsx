@@ -14,6 +14,69 @@ function getCsrf() {
     return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
 }
 
+async function saveCollocation(original: string, correction: string) {
+    await fetch('/vocabulary', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': getCsrf(), 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: correction, definition: `Correct form of: "${original}"`, level: 'b2' }),
+    });
+}
+
+type CollocationError = { original: string; correction: string; note: string };
+
+function CollocationSection({ errors, label = 'you said' }: { errors: CollocationError[]; label?: string }) {
+    const [saved, setSaved] = useState<Set<number>>(new Set());
+
+    async function save(i: number, e: CollocationError) {
+        await saveCollocation(e.original, e.correction);
+        setSaved(prev => new Set([...prev, i]));
+    }
+
+    return (
+        <section style={{ marginBottom: 56 }}>
+            <SectionHeader label="Collocation check" />
+            <div className="card" style={{ padding: '28px 32px' }}>
+                <div className="label-mono" style={{ fontSize: 9.5, color: 'var(--ink-4)', marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    Natural word pairings to practise
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {errors.map((e, i) => (
+                        <div key={i} style={{ paddingBottom: 16, borderBottom: i < errors.length - 1 ? '0.5px solid var(--hairline)' : 'none' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 12, alignItems: 'start' }}>
+                                <div>
+                                    <div className="label-mono" style={{ fontSize: 9, color: 'var(--signal)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                        {label}
+                                    </div>
+                                    <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-2)', textDecoration: 'line-through', textDecorationColor: 'var(--signal)' }}>
+                                        {e.original}
+                                    </span>
+                                </div>
+                                <div>
+                                    <div className="label-mono" style={{ fontSize: 9, color: 'var(--progress)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                        natural English
+                                    </div>
+                                    <span style={{ fontFamily: 'var(--serif)', fontWeight: 500, fontSize: 14, color: 'var(--ink)' }}>
+                                        {e.correction}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => !saved.has(i) && save(i, e)}
+                                    disabled={saved.has(i)}
+                                    title={saved.has(i) ? 'Saved to vocabulary notebook' : 'Save to vocabulary notebook'}
+                                    style={{ background: 'none', border: 'none', cursor: saved.has(i) ? 'default' : 'pointer', fontSize: 16, fontWeight: 600, color: saved.has(i) ? 'oklch(0.55 0.15 145)' : 'var(--ink-3)', paddingTop: 18, lineHeight: 1 }}
+                                >
+                                    {saved.has(i) ? '✓' : '+'}
+                                </button>
+                            </div>
+                            <Marginalia style={{ fontSize: 13, marginTop: 8 }}>{e.note}</Marginalia>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
 type ConvMessage = { role: 'ai' | 'user'; text: string };
 type ConvState = 'idle' | 'loading' | 'waiting' | 'done' | 'error';
 
@@ -262,53 +325,7 @@ export default function SpeakingFeedback({ prompt, session }: SpeakingFeedbackPr
 
                 {/* Section 3 — collocation errors */}
                 {session.collocation_errors.length > 0 && (
-                    <section style={{ marginBottom: 56 }}>
-                        <SectionHeader label="Collocation check" />
-                        <div className="card" style={{ padding: '28px 32px' }}>
-                            <div className="label-mono" style={{ fontSize: 9.5, color: 'var(--ink-4)', marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                Natural word pairings to practise
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                {session.collocation_errors.map((e, i) => (
-                                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, paddingBottom: 16, borderBottom: i < session.collocation_errors.length - 1 ? '0.5px solid var(--hairline)' : 'none' }}>
-                                        <div>
-                                            <div className="label-mono" style={{ fontSize: 9, color: 'var(--signal)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                                you said
-                                            </div>
-                                            <span style={{
-                                                fontFamily: 'var(--serif)',
-                                                fontStyle: 'italic',
-                                                fontSize: 14,
-                                                color: 'var(--ink-2)',
-                                                textDecoration: 'line-through',
-                                                textDecorationColor: 'var(--signal)',
-                                            }}>
-                                                {e.original}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <div className="label-mono" style={{ fontSize: 9, color: 'var(--progress)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                                natural English
-                                            </div>
-                                            <span style={{
-                                                fontFamily: 'var(--serif)',
-                                                fontWeight: 500,
-                                                fontSize: 14,
-                                                color: 'var(--ink)',
-                                            }}>
-                                                {e.correction}
-                                            </span>
-                                        </div>
-                                        <div style={{ gridColumn: '1 / -1' }}>
-                                            <Marginalia style={{ fontSize: 13, marginTop: 2 }}>
-                                                {e.note}
-                                            </Marginalia>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
+                    <CollocationSection errors={session.collocation_errors} label="you said" />
                 )}
 
                 {/* Audio player */}
@@ -367,11 +384,49 @@ export default function SpeakingFeedback({ prompt, session }: SpeakingFeedbackPr
                     </div>
                 </section>
 
+                {/* Improvement tips */}
+                {session.improvement_tips && session.improvement_tips.length > 0 && (
+                    <section style={{ marginBottom: 48 }}>
+                        <SectionHeader label="Next time" />
+                        <div className="card" style={{ padding: '24px 28px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {session.improvement_tips.map((tip, i) => (
+                                    <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                                        <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--signal)', fontWeight: 600, paddingTop: 2, flexShrink: 0 }}>{i + 1}</span>
+                                        <p style={{ fontFamily: 'var(--serif)', fontSize: 14, lineHeight: 1.6, color: 'var(--ink-2)', margin: 0 }}>{tip}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* Retry nudge for low scores */}
+                {session.overall < 60 && (
+                    <div className="card" style={{ padding: '20px 24px', marginBottom: 32, background: 'var(--signal-wash)', border: '0.5px solid oklch(0.85 0.06 25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+                            <div>
+                                <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, color: 'var(--ink)', margin: '0 0 4px' }}>
+                                    This one's worth another go.
+                                </p>
+                                <p style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--ink-3)', margin: 0 }}>
+                                    Read the tips above, then try this prompt again — the second attempt is usually where the real learning happens.
+                                </p>
+                            </div>
+                            <Link href={`/speaking/${prompt.id}`} className="btn" style={{ flexShrink: 0, background: 'var(--signal)', borderColor: 'var(--signal)' }}>
+                                Try again <Ico.arrow />
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 {/* Footer actions */}
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-                    <Link href={`/speaking/${prompt.id}`} className="btn btn-ghost">
-                        Try again
-                    </Link>
+                    {session.overall >= 60 && (
+                        <Link href={`/speaking/${prompt.id}`} className="btn btn-ghost">
+                            Try again
+                        </Link>
+                    )}
                     <Link href="/speaking" className="btn btn-ghost">
                         All prompts <Ico.arrow />
                     </Link>

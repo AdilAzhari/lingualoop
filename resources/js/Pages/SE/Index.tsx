@@ -89,15 +89,46 @@ const FIELD: React.CSSProperties = {
     background: 'var(--paper)', color: 'var(--ink)', outline: 'none', boxSizing: 'border-box',
 };
 
+function getCsrf() {
+    return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
+}
+
 function CreateForm({ onClose }: { onClose: () => void }) {
     const [form, setForm] = useState({
         title: '', category: 'system-design', difficulty: 'mid',
         description: '', context: '', key_concepts: '', framework_hints: '',
         mode: 'both', target_words: '300', target_seconds: '180',
     });
-    const [saving, setSaving] = useState(false);
+    const [saving, setSaving]       = useState(false);
+    const [suggesting, setSuggesting] = useState(false);
 
     function set(k: keyof typeof form, v: string) { setForm(f => ({ ...f, [k]: v })); }
+
+    async function suggest() {
+        setSuggesting(true);
+        try {
+            const res = await fetch('/software/ai-suggest', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': getCsrf(), 'Accept': 'application/json' },
+            });
+            const data = await res.json();
+            const s = data.suggestion;
+            if (s) {
+                setForm(f => ({
+                    ...f,
+                    title:           s.title         ?? f.title,
+                    category:        s.category       ?? f.category,
+                    difficulty:      s.difficulty     ?? f.difficulty,
+                    description:     s.description    ?? f.description,
+                    context:         s.context        ?? f.context,
+                    key_concepts:    Array.isArray(s.key_concepts)    ? s.key_concepts.join('\n')    : f.key_concepts,
+                    framework_hints: Array.isArray(s.framework_hints) ? s.framework_hints.join('\n') : f.framework_hints,
+                    mode:            s.mode           ?? f.mode,
+                }));
+            }
+        } catch {}
+        setSuggesting(false);
+    }
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
@@ -124,7 +155,18 @@ function CreateForm({ onClose }: { onClose: () => void }) {
                             Create a practice prompt
                         </h2>
                     </div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3)', fontSize: 20, padding: 4, lineHeight: 1 }}>×</button>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <button
+                            type="button"
+                            onClick={suggest}
+                            disabled={suggesting}
+                            className="btn btn-ghost"
+                            style={{ fontSize: 12, padding: '6px 14px', opacity: suggesting ? 0.6 : 1 }}
+                        >
+                            {suggesting ? 'Thinking…' : '✦ Suggest with AI'}
+                        </button>
+                        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3)', fontSize: 20, padding: 4, lineHeight: 1 }}>×</button>
+                    </div>
                 </div>
 
                 <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>

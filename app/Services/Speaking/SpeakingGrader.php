@@ -108,11 +108,16 @@ Return STRICT JSON only — no markdown, no text outside JSON:
   "collocation_errors": [
     {"original": "<exact phrase used>", "correction": "<correct collocation>", "note": "<one sentence explaining the natural English pattern>"},
     ...
+  ],
+  "improvement_tips": [
+    "<specific, actionable tip for the next attempt — e.g. 'Try to give an example after each main point'>",
+    ...
   ]
 }
 
 Rules:
 - For collocation_errors: identify unnatural word combinations (e.g. "do a decision" → "make a decision", "strong rain" → "heavy rain"). Include only genuine collocation errors, not grammar errors. Return an empty array if there are none.
+- For improvement_tips: give 2-3 specific, actionable tips the learner can apply next attempt (e.g. "Use the PEEL structure: Point, Evidence, Explanation, Link back"). Return an empty array if overall performance is strong (all scores above 80).
 
 Other rules:
 - If the recording is silent or less than 5 seconds, set all scores to 0 and explain in overall_note
@@ -138,6 +143,10 @@ PROMPT;
             collocationErrors: [
                 ['original' => 'completely different way', 'correction' => 'entirely different way', 'note' => '"Entirely" collocates more naturally with "different" in formal spoken English.'],
                 ['original' => 'reduce my stress levels', 'correction' => 'relieve my stress', 'note' => '"Relieve stress" is the natural collocation — "reduce" is more common with numbers or quantities.'],
+            ],
+            improvementTips: [
+                'After making a main point, give a concrete personal example — it makes your answer feel more authentic and covers the "Evidence" part of a PEEL structure.',
+                'Try to reduce filler words like "um" by pausing silently instead. A confident pause sounds more fluent than a hesitation word.',
             ],
         );
     }

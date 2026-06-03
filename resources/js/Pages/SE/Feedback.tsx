@@ -191,9 +191,26 @@ export default function SeFeedback({ prompt, session }: SeFeedbackProps) {
                     </p>
                 </div>
 
+                {/* Retry nudge for low scores */}
+                {session.overall < 60 && (
+                    <div className="card" style={{ padding: '20px 24px', marginBottom: 32, background: 'var(--signal-wash)', border: '0.5px solid oklch(0.85 0.06 25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+                            <div>
+                                <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, color: 'var(--ink)', margin: '0 0 4px' }}>This one's worth another go.</p>
+                                <p style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--ink-3)', margin: 0 }}>
+                                    Apply the improvement tips above and attempt it again — the second pass is where depth really develops.
+                                </p>
+                            </div>
+                            <Link href={`/software/${prompt.id}`} className="btn" style={{ flexShrink: 0, background: 'var(--signal)', borderColor: 'var(--signal)' }}>
+                                Try again <Ico.arrow />
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 {/* Footer */}
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-                    <Link href={`/software/${prompt.id}`} className="btn btn-ghost">Try again</Link>
+                    {session.overall >= 60 && <Link href={`/software/${prompt.id}`} className="btn btn-ghost">Try again</Link>}
                     <Link href="/software" className="btn btn-ghost">All prompts <Ico.arrow /></Link>
                     <Link href="/software/flashcards" className="btn">Flashcards <Ico.arrow /></Link>
                 </div>
