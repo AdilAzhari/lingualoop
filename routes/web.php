@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/software/sessions/{session}/audio', [SeController::class, 'audio'])->whereNumber('session')->name('se.sessions.audio');
     Route::get('/software/sessions/{session}', [SeController::class, 'session'])->whereNumber('session')->name('se.sessions.show');
     Route::get('/software/{prompt}', [SeController::class, 'show'])->whereNumber('prompt')->name('se.show');
+    Route::post('/software/{prompt}/sample', [SeController::class, 'sample'])->whereNumber('prompt')->name('se.sample');
     Route::post('/software/{prompt}/writing', [SeController::class, 'storeWriting'])->whereNumber('prompt')->name('se.store-writing');
     Route::post('/software/{prompt}/speaking', [SeController::class, 'storeSpeaking'])->whereNumber('prompt')->name('se.store-speaking');
 

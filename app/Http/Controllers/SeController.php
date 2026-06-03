@@ -146,6 +146,43 @@ PROMPT;
         ]);
     }
 
+    /** POST /software/{prompt}/sample — generate a model answer */
+    public function sample(SePrompt $prompt): JsonResponse
+    {
+        $concepts = implode(', ', $prompt->key_concepts ?? []);
+        $hints    = $prompt->framework_hints
+            ? "\n\nFramework hints: " . implode('; ', $prompt->framework_hints)
+            : '';
+
+        $systemPrompt = <<<PROMPT
+You are a {$prompt->difficulty}-level software engineer writing a model answer for a technical interview question.
+
+Category: {$prompt->category}
+Question: {$prompt->title}
+
+{$prompt->description}
+{$hints}
+
+Key concepts that should be addressed: {$concepts}
+
+Write a thorough, well-structured model answer at the {$prompt->difficulty} level. Use clear sections with bold headers (e.g. **Overview**, **Core Design**, **Trade-offs**). The answer should:
+- Directly address the question
+- Cover all key concepts listed above
+- Explain trade-offs and justify decisions
+- Be practical — mention specific technologies or patterns where relevant
+- Be 350–500 words
+
+Return ONLY the answer text — no preamble, no "Here is my answer:", just the content.
+PROMPT;
+
+        try {
+            $text = GeminiClient::ask($systemPrompt, 45);
+            return response()->json(['text' => trim($text)]);
+        } catch (\Throwable) {
+            return response()->json(['error' => 'Could not generate a model answer right now.'], 500);
+        }
+    }
+
     /** POST /software/{prompt}/writing */
     public function storeWriting(Request $request, SePrompt $prompt): RedirectResponse
     {

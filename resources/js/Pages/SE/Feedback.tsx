@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppShell from '@/Components/Layout/AppShell';
 import Page from '@/Components/Layout/Page';
@@ -7,6 +8,106 @@ import Marginalia from '@/Components/Typography/Marginalia';
 import ScoreArc from '@/Components/Common/ScoreArc';
 import { Ico } from '@/Components/Common/icons';
 import type { SeFeedbackProps, SeDimension } from '@/lib/types';
+
+function getCsrf() {
+    return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
+}
+
+type ModelAnswerStatus = 'idle' | 'loading' | 'done' | 'error';
+
+function ModelAnswer({ promptId }: { promptId: number }) {
+    const [status, setStatus] = useState<ModelAnswerStatus>('idle');
+    const [text, setText]     = useState('');
+
+    async function load() {
+        setStatus('loading');
+        try {
+            const res = await fetch(`/software/${promptId}/sample`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': getCsrf(), 'Accept': 'application/json' },
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error ?? 'Failed');
+            setText(data.text);
+            setStatus('done');
+        } catch {
+            setStatus('error');
+        }
+    }
+
+    if (status === 'idle') return (
+        <section style={{ marginBottom: 56 }}>
+            <SectionHeader label="Model answer" />
+            <div className="card" style={{ padding: '24px 28px' }}>
+                <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-3)', margin: '0 0 16px', lineHeight: 1.6 }}>
+                    See a senior-engineer-level model answer for this question — then compare it against your own to spot what you missed.
+                </p>
+                <button onClick={load} className="btn btn-ghost" style={{ fontSize: 13 }}>
+                    Show model answer
+                </button>
+            </div>
+        </section>
+    );
+
+    if (status === 'loading') return (
+        <section style={{ marginBottom: 56 }}>
+            <SectionHeader label="Model answer" />
+            <div className="card" style={{ padding: '24px 28px' }}>
+                <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-4)', margin: 0 }}>
+                    Generating…
+                </p>
+            </div>
+        </section>
+    );
+
+    if (status === 'error') return (
+        <section style={{ marginBottom: 56 }}>
+            <SectionHeader label="Model answer" />
+            <div className="card" style={{ padding: '24px 28px' }}>
+                <p style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--signal)', margin: '0 0 12px' }}>
+                    Could not generate a model answer.
+                </p>
+                <button onClick={load} className="btn btn-ghost" style={{ fontSize: 12 }}>Retry</button>
+            </div>
+        </section>
+    );
+
+    // Format bold headers (**text**) into styled spans
+    function renderMarkdown(raw: string) {
+        return raw.split('\n').map((line, i) => {
+            const parts = line.split(/(\*\*[^*]+\*\*)/g);
+            return (
+                <span key={i} style={{ display: 'block', marginBottom: line.trim() === '' ? 12 : 0 }}>
+                    {parts.map((part, j) =>
+                        part.startsWith('**') && part.endsWith('**')
+                            ? <strong key={j} style={{ fontWeight: 600, color: 'var(--ink)' }}>{part.slice(2, -2)}</strong>
+                            : <span key={j}>{part}</span>
+                    )}
+                </span>
+            );
+        });
+    }
+
+    return (
+        <section style={{ marginBottom: 56 }}>
+            <SectionHeader label="Model answer" />
+            <div className="card" style={{ padding: '28px 32px' }}>
+                <div className="label-mono" style={{ fontSize: 9.5, color: 'var(--ink-4)', marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    Senior-engineer level · use this to compare against your answer
+                </div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 15, lineHeight: 1.75, color: 'var(--ink-2)' }}>
+                    {renderMarkdown(text)}
+                </div>
+                <button
+                    onClick={() => setStatus('idle')}
+                    style={{ marginTop: 16, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-4)', padding: 0 }}
+                >
+                    Hide
+                </button>
+            </div>
+        </section>
+    );
+}
 
 function scoreColor(score: number) {
     if (score >= 80) return 'var(--progress)';
@@ -182,6 +283,9 @@ export default function SeFeedback({ prompt, session }: SeFeedbackProps) {
                         </div>
                     </section>
                 )}
+
+                {/* Model answer — always shown so user can compare */}
+                <ModelAnswer promptId={prompt.id} />
 
                 {/* Prompt reminder */}
                 <div className="card" style={{ padding: '20px 24px', marginBottom: 48, background: 'var(--paper-2)' }}>
