@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
         $this->seedListeningPassages();
         $this->seedDemoUser();
         $this->call(ImagePromptSeeder::class);
+        $this->call(SeSeeder::class);
     }
 
     private function seedErrorTypes(): void

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ComposeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\SeController;
 use App\Http\Controllers\ListeningController;
 use App\Http\Controllers\MockController;
 use App\Http\Controllers\ReadingController;
@@ -83,6 +84,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/vocabulary/{entry}', [VocabularyController::class, 'destroy'])->name('vocabulary.destroy');
 
     Route::get('/glossary', GlossaryController::class)->name('glossary');
+
+    Route::get('/software', [SeController::class, 'index'])->name('se.index');
+    Route::get('/software/flashcards', [SeController::class, 'flashcards'])->name('se.flashcards');
+    Route::post('/software/flashcards/{progress}/answer', [SeController::class, 'flashcardAnswer'])->whereNumber('progress')->name('se.flashcard-answer');
+    Route::get('/software/sessions/{session}/audio', [SeController::class, 'audio'])->whereNumber('session')->name('se.sessions.audio');
+    Route::get('/software/sessions/{session}', [SeController::class, 'session'])->whereNumber('session')->name('se.sessions.show');
+    Route::get('/software/{prompt}', [SeController::class, 'show'])->whereNumber('prompt')->name('se.show');
+    Route::post('/software/{prompt}/writing', [SeController::class, 'storeWriting'])->whereNumber('prompt')->name('se.store-writing');
+    Route::post('/software/{prompt}/speaking', [SeController::class, 'storeSpeaking'])->whereNumber('prompt')->name('se.store-speaking');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/dashboard/generate', [DashboardController::class, 'generate'])->name('dashboard.generate');
