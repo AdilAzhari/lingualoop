@@ -305,6 +305,17 @@ export default function SpeakingFeedback({ prompt, session }: SpeakingFeedbackPr
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
                         <ScoreArc value={session.overall} label="Overall" size={140} />
                         <BandBadge score={session.overall} label="est. IELTS band" />
+                        {session.previous_overall !== null && (() => {
+                            const delta = session.overall - session.previous_overall!;
+                            const color = delta > 0 ? 'var(--progress)' : delta < 0 ? 'var(--signal)' : 'var(--ink-3)';
+                            return (
+                                <div style={{ textAlign: 'center' }}>
+                                    <span style={{ fontFamily: 'var(--serif)', fontSize: 13, color, fontWeight: 500 }}>
+                                        {delta > 0 ? '+' : ''}{delta} vs last attempt
+                                    </span>
+                                </div>
+                            );
+                        })()}
                     </div>
                 </div>
 

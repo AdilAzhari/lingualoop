@@ -1,4 +1,5 @@
 import type { ScorePoint } from '@/lib/types';
+import { toBand } from '@/lib/band';
 
 type Props = {
     history: ScorePoint[];
@@ -39,6 +40,10 @@ export default function ScoreSparkline({ history, width = 200, height = 52, colo
     const lastX = width;
     const lastY = height - ((last.score - min) / range) * height;
 
+    const lastBand  = toBand(last.score);
+    const firstBand = toBand(first.score);
+    const bandDelta = parseFloat(lastBand) - parseFloat(firstBand);
+
     return (
         <div>
             <svg
@@ -58,13 +63,18 @@ export default function ScoreSparkline({ history, width = 200, height = 52, colo
                 />
                 <circle cx={lastX} cy={lastY} r="3" fill={color} opacity="0.9" />
             </svg>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 6 }}>
                 <span style={{ fontSize: 9.5, fontFamily: 'var(--serif)', color: 'var(--ink-4)' }}>
                     {first.date}
                 </span>
-                <span style={{ fontSize: 11, fontFamily: 'var(--serif)', color: deltaColor, letterSpacing: '-0.01em' }}>
-                    {delta > 0 ? '+' : ''}{delta} pts
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                    <span style={{ fontSize: 11, fontFamily: 'var(--serif)', color: deltaColor, letterSpacing: '-0.01em' }}>
+                        {delta > 0 ? '+' : ''}{delta} pts
+                    </span>
+                    <span className="label-mono" style={{ fontSize: 9, color: 'var(--ink-4)' }}>
+                        Band {lastBand}{bandDelta !== 0 ? ` (${bandDelta > 0 ? '+' : ''}${bandDelta})` : ''}
+                    </span>
+                </div>
                 <span style={{ fontSize: 9.5, fontFamily: 'var(--serif)', color: 'var(--ink-4)' }}>
                     {last.date}
                 </span>

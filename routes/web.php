@@ -84,6 +84,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/vocabulary/{entry}', [VocabularyController::class, 'destroy'])->name('vocabulary.destroy');
 
     Route::get('/glossary', GlossaryController::class)->name('glossary');
+    Route::get('/glossary/json', [GlossaryController::class, 'json'])->name('glossary.json');
 
     Route::get('/software', [SeController::class, 'index'])->name('se.index');
     Route::post('/software', [SeController::class, 'storePrompt'])->name('se.store-prompt');

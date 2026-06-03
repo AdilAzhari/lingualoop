@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DrillCard;
+use App\Models\ImageSession;
 use App\Models\LevelMilestone;
 use App\Models\ListeningSession;
 use App\Models\Prompt;
 use App\Models\ReadingSession;
+use App\Models\SeSession;
 use App\Models\SpeakingSession;
 use App\Models\Streak;
 use App\Models\VocabularyEntry;
@@ -59,8 +62,13 @@ class HomeController extends Controller
         $readingToday   = ReadingSession::where('user_id', $user->id)->where('created_at', '>=', today())->count();
         $speakingToday  = SpeakingSession::where('user_id', $user->id)->where('created_at', '>=', today())->count();
         $listeningToday = ListeningSession::where('user_id', $user->id)->where('created_at', '>=', today())->count();
+        $imageToday     = ImageSession::where('user_id', $user->id)->where('created_at', '>=', today())->count();
+        $seToday        = SeSession::where('user_id', $user->id)->where('created_at', '>=', today())->count();
         $vocabDue       = VocabularyEntry::where('user_id', $user->id)
             ->where(fn ($q) => $q->whereNull('srs_due_at')->orWhere('srs_due_at', '<=', now()))
+            ->count();
+        $drillDue = DrillCard::where('user_id', $user->id)
+            ->where(fn ($q) => $q->whereNull('due_at')->orWhere('due_at', '<=', now()))
             ->count();
 
         // Recent submissions
@@ -148,7 +156,10 @@ class HomeController extends Controller
                 'reading'   => $readingToday,
                 'speaking'  => $speakingToday,
                 'listening' => $listeningToday,
+                'image'     => $imageToday,
+                'se'        => $seToday,
                 'vocab_due' => $vocabDue,
+                'drill_due' => $drillDue,
             ],
         ]);
     }

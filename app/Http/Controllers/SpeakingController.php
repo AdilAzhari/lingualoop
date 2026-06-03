@@ -270,6 +270,15 @@ PROMPT;
 
         $prompt = $session->prompt;
 
+        // Previous attempt on the same prompt (for delta display)
+        $previous = SpeakingSession::where('user_id', $session->user_id)
+            ->where('prompt_id', $session->prompt_id)
+            ->where('status', 'graded')
+            ->where('id', '<', $session->id)
+            ->orderByDesc('id')
+            ->first();
+        $previousOverall = $previous ? $previous->overall : null;
+
         return Inertia::render('Speaking/Feedback', [
             'prompt' => [
                 'id'    => $prompt->id,
@@ -280,6 +289,7 @@ PROMPT;
             'session' => [
                 'id'          => $session->id,
                 'overall'     => $session->overall,
+                'previous_overall' => $previousOverall,
                 'has_audio'   => $session->audio_path && file_exists(storage_path('app/' . $session->audio_path)),
                 'transcript'  => $session->transcript,
                 'scores'      => [

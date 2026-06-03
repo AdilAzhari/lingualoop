@@ -94,11 +94,13 @@ export default function Home({ greeting, headline, lead, today_prompt, streak, p
 }
 
 function TodayActivity({ written, activity }: { written: boolean; activity: HomePageProps['today_activity'] }) {
-    const items: Array<{ label: string; href: string; done: boolean | number; badge?: string }> = [
+    const items: Array<{ label: string; href: string; done: boolean | number; badge?: string; urgent?: boolean }> = [
         { label: 'Write',   href: '/compose',    done: written,            badge: written ? '✓' : undefined },
-        { label: 'Read',    href: '/reading',    done: activity.reading,   badge: activity.reading > 0 ? String(activity.reading) : undefined },
+        { label: 'Read',    href: '/reading',    done: activity.reading,   badge: activity.reading   > 0 ? String(activity.reading)   : undefined },
         { label: 'Listen',  href: '/listening',  done: activity.listening, badge: activity.listening > 0 ? String(activity.listening) : undefined },
-        { label: 'Speak',   href: '/speaking',   done: activity.speaking,  badge: activity.speaking > 0 ? String(activity.speaking) : undefined },
+        { label: 'Speak',   href: '/speaking',   done: activity.speaking,  badge: activity.speaking  > 0 ? String(activity.speaking)  : undefined },
+        { label: 'Images',  href: '/images',     done: activity.image,     badge: activity.image     > 0 ? String(activity.image)     : undefined },
+        { label: 'SE',      href: '/software',   done: activity.se,        badge: activity.se        > 0 ? String(activity.se)        : undefined },
     ];
 
     return (
@@ -148,14 +150,30 @@ function TodayActivity({ written, activity }: { written: boolean; activity: Home
                             border: `0.5px solid ${activity.vocab_due > 0 ? 'oklch(0.88 0.09 70)' : 'var(--hairline)'}`,
                         }}
                     >
-                        <span style={{
-                            fontFamily: 'var(--serif)', fontSize: 13,
-                            color: activity.vocab_due > 0 ? 'oklch(0.5 0.16 60)' : 'var(--ink-3)',
-                        }}>
+                        <span style={{ fontFamily: 'var(--serif)', fontSize: 13, color: activity.vocab_due > 0 ? 'oklch(0.5 0.16 60)' : 'var(--ink-3)' }}>
                             Vocab
                         </span>
                         <span className="num" style={{ fontSize: 11, color: activity.vocab_due > 0 ? 'oklch(0.5 0.16 60)' : 'var(--ink-4)' }}>
                             {activity.vocab_due > 0 ? `${activity.vocab_due} due` : '—'}
+                        </span>
+                    </Link>
+
+                    {/* Drill due chip */}
+                    <Link
+                        href="/drill"
+                        style={{
+                            textDecoration: 'none',
+                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                            padding: '5px 12px', borderRadius: 99,
+                            background: activity.drill_due > 0 ? 'var(--signal-wash)' : 'var(--paper-3)',
+                            border: `0.5px solid ${activity.drill_due > 0 ? 'oklch(0.85 0.06 25)' : 'var(--hairline)'}`,
+                        }}
+                    >
+                        <span style={{ fontFamily: 'var(--serif)', fontSize: 13, color: activity.drill_due > 0 ? 'var(--signal)' : 'var(--ink-3)' }}>
+                            Drills
+                        </span>
+                        <span className="num" style={{ fontSize: 11, color: activity.drill_due > 0 ? 'var(--signal)' : 'var(--ink-4)' }}>
+                            {activity.drill_due > 0 ? `${activity.drill_due} due` : '—'}
                         </span>
                     </Link>
                 </div>

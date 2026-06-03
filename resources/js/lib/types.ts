@@ -172,7 +172,7 @@ export type HomePageProps = {
     score_history: ScorePoint[];
     written_today: boolean;
     level_up: { current: string; suggested: string; avg_score: number } | null;
-    today_activity: { reading: number; speaking: number; listening: number; vocab_due: number };
+    today_activity: { reading: number; speaking: number; listening: number; image: number; se: number; vocab_due: number; drill_due: number };
 };
 
 export type ComposePageProps = {
@@ -265,6 +265,7 @@ export type SpeakingFeedbackProps = {
     session: {
         id: number;
         overall: number;
+        previous_overall: number | null;
         has_audio: boolean;
         transcript: string;
         scores: Record<SpeakingDimension, number>;

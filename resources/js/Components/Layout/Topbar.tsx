@@ -77,6 +77,8 @@ export default function Topbar() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    gap: 16,
+                    minWidth: 0,
                 }}
             >
                 <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -89,7 +91,7 @@ export default function Topbar() {
                     </span>
                 </Link>
 
-                <nav style={{ display: 'flex', gap: 4 }}>
+                <nav style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     {NAV.map((n) => {
                         const active = isActive(url, n.href);
                         return (

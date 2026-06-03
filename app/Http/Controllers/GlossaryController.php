@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -121,5 +122,18 @@ class GlossaryController extends Controller
     public function __invoke(): Response
     {
         return Inertia::render('Glossary', ['entries' => self::ENTRIES]);
+    }
+
+    /** GET /glossary/json — machine-readable for the MarginNote "Why?" widget */
+    public function json(): JsonResponse
+    {
+        return response()->json(
+            collect(self::ENTRIES)->keyBy('code')->map(fn ($e) => [
+                'explanation' => $e['explanation'],
+                'wrong'       => $e['wrong'],
+                'right'       => $e['right'],
+                'tip'         => $e['tip'],
+            ])
+        );
     }
 }

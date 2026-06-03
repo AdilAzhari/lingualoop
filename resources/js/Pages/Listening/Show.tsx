@@ -221,18 +221,26 @@ export default function ListeningShow({ passage, questions }: ListeningShowProps
                             <AudioPlayer audioScript={passage.audio_script} />
                         </div>
 
-                        {/* Transcript toggle */}
+                        {/* Transcript — locked until all questions answered */}
                         <div className="card" style={{ padding: '16px 20px' }}>
-                            <button
-                                onClick={() => setShowScript((v) => !v)}
-                                style={{ fontFamily: 'var(--serif)', fontSize: 13, background: 'none', border: 'none', color: 'var(--ink-3)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 6 }}
-                            >
-                                <span style={{ display: 'inline-block', transition: 'transform .2s', transform: showScript ? 'rotate(90deg)' : 'none' }}>▶</span>
-                                {showScript ? 'Hide' : 'Show'} transcript
-                            </button>
-                            {showScript && (
-                                <p style={{ fontFamily: 'var(--serif)', fontSize: 14.5, lineHeight: 1.7, margin: '14px 0 0', color: 'var(--ink-2)' }}>
-                                    {passage.audio_script}
+                            {canSubmit || submitting ? (
+                                <>
+                                    <button
+                                        onClick={() => setShowScript((v) => !v)}
+                                        style={{ fontFamily: 'var(--serif)', fontSize: 13, background: 'none', border: 'none', color: 'var(--ink-3)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 6 }}
+                                    >
+                                        <span style={{ display: 'inline-block', transition: 'transform .2s', transform: showScript ? 'rotate(90deg)' : 'none' }}>▶</span>
+                                        {showScript ? 'Hide' : 'Show'} transcript
+                                    </button>
+                                    {showScript && (
+                                        <p style={{ fontFamily: 'var(--serif)', fontSize: 14.5, lineHeight: 1.7, margin: '14px 0 0', color: 'var(--ink-2)' }}>
+                                            {passage.audio_script}
+                                        </p>
+                                    )}
+                                </>
+                            ) : (
+                                <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-4)', margin: 0 }}>
+                                    Transcript unlocks after you answer all questions.
                                 </p>
                             )}
                         </div>
