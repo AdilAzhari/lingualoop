@@ -40,10 +40,25 @@ External APIs  (Gemini · ElevenLabs · dictionaryapi.dev)
 1. User records audio in-browser using the `MediaRecorder` API
 2. Audio blob posted as multipart to `SpeakingController@store`
 3. `SpeakingGrader` sends audio directly to Gemini (multimodal) for transcription + grading
-4. AI examiner follow-up questions generated via `SpeakingController@followup`
-5. Recorded audio stored on disk and served back via `SpeakingController@audio`
+4. Grader now returns `collocation_errors` — unnatural word pairings found in the transcript, each with original phrase, natural correction, and a brief note
+5. AI examiner follow-up questions generated via `SpeakingController@followup`
+6. Topic-relevant vocab suggestions generated on demand via `SpeakingController@vocabSuggest` (lazy — only on user request)
+7. Recorded audio stored on disk and served back via `SpeakingController@audio`
 
 **Key models:** `SpeakingPrompt`, `SpeakingSession`
+
+### Image Description (`/images`)
+
+1. `ImagePrompt` records store an image file path, task instruction, and a list of key features that should be described
+2. The `Show` page displays the image and lets the user toggle between **Writing** and **Speaking** mode
+3. **Writing mode** — user types their description; `ImageController@storeWriting` passes the image (base64) + text to `ImageGrader::gradeWriting()`, which calls Gemini's multimodal API
+4. **Speaking mode** — user records audio; `ImageController@storeSpeaking` passes the image + audio to `ImageGrader::gradeSpeaking()`
+5. Grader returns 4 dimension scores (task achievement, vocabulary, coherence, accuracy), collocation errors, and a `key_features_missed` list — features the learner failed to mention
+6. Feedback page shows dimension cards, collocation check, key-features-to-cover-next-time, and the original text/transcript
+
+**Key models:** `ImagePrompt`, `ImageSession`
+
+**Admin setup:** Image prompts are seeded or created manually. Store image files in `storage/app/image-prompts/` and set `image_path` to the relative path from `storage/app/`.
 
 ### Listening (`/listening`)
 
@@ -120,6 +135,10 @@ GRADING_DRIVER=stub    →  StubProvider    →  returns hardcoded GradingResult
 ### `ReadingGrader`
 
 Reused for both Reading and Listening comprehension grading. Builds a structured prompt with the passage body + Q&A, calls `GeminiClient::json()`, and maps the response into `ReadingGradingResult`.
+
+### `ImageGrader`
+
+Multimodal grader for the Image Description module. Sends image + text (writing mode) or image + audio (speaking mode) as `inline_data` base64 parts to Gemini's `generateContent` endpoint. Returns `ImageGradingResult` containing 4 dimension scores, `collocationErrors`, and `keyFeaturesMissed`. Falls back to a stub when `GRADING_DRIVER=stub`.
 
 ### `ElevenLabsTtsClient` / `AzureTtsClient`
 

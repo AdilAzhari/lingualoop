@@ -122,6 +122,7 @@ class SpeakingController extends Controller
             'dimension_notes'    => $result->dimensionNotes,
             'headline'           => $result->headline,
             'overall_note'       => $result->overallNote,
+            'collocation_errors' => $result->collocationErrors,
             'duration_seconds'   => $result->durationSeconds,
             'graded_at'          => now(),
         ]);
@@ -151,6 +152,49 @@ PROMPT;
             return response()->json(['text' => trim($generated)]);
         } catch (\Throwable) {
             return response()->json(['error' => 'Could not generate a sample right now. Please try again.'], 500);
+        }
+    }
+
+    /** POST /speaking/{prompt}/vocab-suggest */
+    public function vocabSuggest(SpeakingPrompt $prompt): JsonResponse
+    {
+        $systemPrompt = <<<PROMPT
+Speaking topic: "{$prompt->topic}"
+Task: {$prompt->text}
+
+Suggest exactly 7 English vocabulary words that would be impressive and useful for a candidate speaking on this topic in an IELTS context.
+
+Requirements:
+- Mix of B2, C1, and C2 CEFR level words
+- Each word must be directly relevant to this specific topic
+- Prefer sophisticated, naturally spoken academic or descriptive words
+- Avoid overly obscure or archaic words
+
+Return ONLY a valid JSON object in this exact format:
+{"words": [
+  {"word": "...", "definition": "short definition (max 10 words)", "level": "b2"},
+  {"word": "...", "definition": "short definition (max 10 words)", "level": "c1"},
+  {"word": "...", "definition": "short definition (max 10 words)", "level": "c2"}
+]}
+PROMPT;
+
+        try {
+            $data  = GeminiClient::json($systemPrompt, 30);
+            $items = $data['words'] ?? [];
+
+            $words = collect($items)
+                ->filter(fn ($w) => is_array($w) && isset($w['word'], $w['definition'], $w['level']))
+                ->map(fn ($w) => [
+                    'word'       => (string) $w['word'],
+                    'definition' => (string) $w['definition'],
+                    'level'      => in_array($w['level'], ['a2', 'b1', 'b2', 'c1', 'c2']) ? $w['level'] : 'b2',
+                ])
+                ->values()
+                ->all();
+
+            return response()->json(['words' => $words]);
+        } catch (\Throwable) {
+            return response()->json(['words' => []], 500);
         }
     }
 
@@ -245,9 +289,10 @@ PROMPT;
                 ],
                 'dimension_notes' => $session->dimension_notes ?? ['fluency' => '', 'vocabulary' => '', 'grammar' => '', 'pronunciation' => ''],
                 'headline'        => $session->headline        ?? ['primary' => 'Feedback', 'secondary' => ''],
-                'overall_note'    => $session->overall_note,
-                'duration_seconds'=> $session->duration_seconds,
-                'graded_at'       => $session->graded_at?->toIso8601String(),
+                'overall_note'       => $session->overall_note,
+                'collocation_errors' => $session->collocation_errors ?? [],
+                'duration_seconds'   => $session->duration_seconds,
+                'graded_at'          => $session->graded_at?->toIso8601String(),
             ],
         ]);
     }

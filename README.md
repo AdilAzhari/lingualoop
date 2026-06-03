@@ -17,11 +17,12 @@ Full-stack IELTS preparation platform with AI feedback across Writing, Reading, 
 
 | Module | Route | What it does |
 |--------|-------|--------------|
-| Writing | `/compose` | Essay submission · Gemini grading on TA / CC / LR / GRA · error taxonomy · drill cards |
+| Writing | `/compose` | Essay submission · Gemini grading on TA / CC / LR / GRA · error taxonomy · drill cards · collocation detection |
 | Reading | `/reading` | Timed comprehension passages · AI-graded Q&A |
-| Speaking | `/speaking` | MediaRecorder audio upload · Whisper transcription · Gemini grading · AI examiner follow-up |
+| Speaking | `/speaking` | MediaRecorder audio upload · Gemini grading · collocation errors · AI examiner follow-up · vocab suggestions per topic |
 | Listening | `/listening` | TTS-synthesised audio · comprehension questions · AI grading |
 | Vocabulary | `/vocabulary` | Notebook · FSRS SRS flashcard review · AI example + CEFR detection |
+| Image Description | `/images` | Describe charts, graphs, diagrams, maps, and photos — writing or speaking · multimodal Gemini grading · collocation check · key-features coverage |
 | Mock Exam | `/mock` | 65-min timed hub drawing randomly from all four skills |
 | Drills | `/drill` | FSRS flashcard session from writing error cards |
 | Profile | `/profile` | Error stratigraphy · score sparklines · 20-badge achievement system |
@@ -111,6 +112,7 @@ app/
     Grading/GradingService.php
     Reading/ReadingGrader.php
     Speaking/SpeakingGrader.php
+    Image/ImageGrader.php
     ErrorProfile/ProfileAggregator.php
 
 resources/js/

@@ -62,6 +62,12 @@ class GeminiProvider implements GradingProvider
         span_start/span_end are character offsets into the submission text.
         severity is one of: good, low, med, high. Mark at least one thing the
         learner did right with severity "good".
+
+        For collocation_unusual errors: flag unnatural word pairings — e.g. "do a
+        decision" (→ "make a decision"), "strong rain" (→ "heavy rain"), "make
+        homework" (→ "do homework"). The suggested_fix should be the correct full
+        phrase. The note should name the correct verb/adjective and give one more
+        example of the same pattern.
         PROMPT;
     }
 

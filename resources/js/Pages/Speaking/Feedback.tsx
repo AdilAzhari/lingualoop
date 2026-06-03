@@ -260,6 +260,57 @@ export default function SpeakingFeedback({ prompt, session }: SpeakingFeedbackPr
                     </div>
                 </section>
 
+                {/* Section 3 — collocation errors */}
+                {session.collocation_errors.length > 0 && (
+                    <section style={{ marginBottom: 56 }}>
+                        <SectionHeader label="Collocation check" />
+                        <div className="card" style={{ padding: '28px 32px' }}>
+                            <div className="label-mono" style={{ fontSize: 9.5, color: 'var(--ink-4)', marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                Natural word pairings to practise
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                {session.collocation_errors.map((e, i) => (
+                                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, paddingBottom: 16, borderBottom: i < session.collocation_errors.length - 1 ? '0.5px solid var(--hairline)' : 'none' }}>
+                                        <div>
+                                            <div className="label-mono" style={{ fontSize: 9, color: 'var(--signal)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                                you said
+                                            </div>
+                                            <span style={{
+                                                fontFamily: 'var(--serif)',
+                                                fontStyle: 'italic',
+                                                fontSize: 14,
+                                                color: 'var(--ink-2)',
+                                                textDecoration: 'line-through',
+                                                textDecorationColor: 'var(--signal)',
+                                            }}>
+                                                {e.original}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <div className="label-mono" style={{ fontSize: 9, color: 'var(--progress)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                                natural English
+                                            </div>
+                                            <span style={{
+                                                fontFamily: 'var(--serif)',
+                                                fontWeight: 500,
+                                                fontSize: 14,
+                                                color: 'var(--ink)',
+                                            }}>
+                                                {e.correction}
+                                            </span>
+                                        </div>
+                                        <div style={{ gridColumn: '1 / -1' }}>
+                                            <Marginalia style={{ fontSize: 13, marginTop: 2 }}>
+                                                {e.note}
+                                            </Marginalia>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
                 {/* Audio player */}
                 {session.has_audio && (
                     <section style={{ marginBottom: 40 }}>

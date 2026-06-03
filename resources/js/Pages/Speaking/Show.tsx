@@ -109,6 +109,164 @@ function SampleAnswer({ url }: { url: string }) {
     );
 }
 
+type SuggestedWord = { word: string; definition: string; level: string };
+type SuggestStatus = 'idle' | 'loading' | 'done' | 'error';
+
+function VocabSuggestions({ promptId }: { promptId: number }) {
+    const [status, setStatus] = useState<SuggestStatus>('idle');
+    const [words, setWords] = useState<SuggestedWord[]>([]);
+    const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [saved, setSaved] = useState<Set<string>>(new Set());
+
+    async function load() {
+        setStatus('loading');
+        try {
+            const res = await fetch(`/speaking/${promptId}/vocab-suggest`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': getCsrf(), 'Accept': 'application/json' },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error();
+            setWords(data.words ?? []);
+            setStatus('done');
+        } catch {
+            setStatus('error');
+        }
+    }
+
+    async function saveWord(w: SuggestedWord) {
+        try {
+            await fetch('/vocabulary', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': getCsrf(),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ word: w.word, definition: w.definition, level: w.level }),
+            });
+            setSaved((prev) => new Set([...prev, w.word]));
+        } catch {}
+    }
+
+    function toggle(word: string) {
+        setSelected((prev) => {
+            const next = new Set(prev);
+            next.has(word) ? next.delete(word) : next.add(word);
+            return next;
+        });
+    }
+
+    const sectionStyle = {
+        width: '100%', borderTop: '0.5px solid var(--hairline)', paddingTop: 20, marginTop: 8,
+    } as const;
+
+    if (status === 'idle') return (
+        <div style={sectionStyle}>
+            <button onClick={load} className="btn btn-ghost" style={{ fontSize: 12, padding: '6px 14px' }}>
+                Suggest vocabulary for this topic
+            </button>
+        </div>
+    );
+
+    if (status === 'loading') return (
+        <div style={sectionStyle}>
+            <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-3)', margin: 0 }}>
+                Finding vocabulary…
+            </p>
+        </div>
+    );
+
+    if (status === 'error') return (
+        <div style={sectionStyle}>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: 13, color: 'var(--signal)', margin: 0 }}>
+                Could not load suggestions.{' '}
+                <button
+                    onClick={load}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--signal)', fontFamily: 'var(--serif)', fontSize: 13, padding: 0, textDecoration: 'underline' }}
+                >
+                    Retry
+                </button>
+            </p>
+        </div>
+    );
+
+    return (
+        <div style={sectionStyle}>
+            <div className="label-mono" style={{ fontSize: 9.5, color: 'var(--ink-4)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Suggested vocabulary · tap to mark for use
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {words.map((w) => {
+                    const active = selected.has(w.word);
+                    const isSaved = saved.has(w.word);
+                    const isAdvanced = w.level === 'c1' || w.level === 'c2';
+                    return (
+                        <div key={w.word} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <button
+                                onClick={() => toggle(w.word)}
+                                style={{
+                                    flexShrink: 0,
+                                    background: active ? 'var(--ink)' : 'var(--paper-3)',
+                                    color: active ? 'var(--paper)' : 'var(--ink)',
+                                    border: active ? 'none' : '1px solid var(--hairline)',
+                                    borderRadius: 999,
+                                    padding: '5px 14px',
+                                    fontFamily: 'var(--serif)',
+                                    fontStyle: 'italic',
+                                    fontSize: 13.5,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                    transition: 'background 0.15s',
+                                }}
+                            >
+                                {w.word}
+                                <span style={{
+                                    fontStyle: 'normal',
+                                    fontFamily: 'var(--mono, monospace)',
+                                    fontSize: 9,
+                                    opacity: active ? 0.7 : 0.9,
+                                    color: isAdvanced ? (active ? 'var(--paper)' : 'var(--signal)') : undefined,
+                                }}>
+                                    {w.level.toUpperCase()}
+                                </span>
+                            </button>
+                            <p style={{ flex: 1, margin: 0, fontFamily: 'var(--serif)', fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.4 }}>
+                                {w.definition}
+                            </p>
+                            <button
+                                onClick={() => !isSaved && saveWord(w)}
+                                disabled={isSaved}
+                                title={isSaved ? 'Saved to notebook' : 'Save to vocabulary notebook'}
+                                style={{
+                                    flexShrink: 0,
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: isSaved ? 'default' : 'pointer',
+                                    padding: '2px 4px',
+                                    fontSize: 15,
+                                    fontWeight: 600,
+                                    color: isSaved ? 'oklch(0.55 0.15 145)' : 'var(--ink-3)',
+                                    lineHeight: 1,
+                                }}
+                            >
+                                {isSaved ? '✓' : '+'}
+                            </button>
+                        </div>
+                    );
+                })}
+            </div>
+            {selected.size > 0 && (
+                <p style={{ margin: '12px 0 0', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-3)' }}>
+                    Try to use {selected.size === 1 ? 'this word' : `these ${selected.size} words`} in your response.
+                </p>
+            )}
+        </div>
+    );
+}
+
 function VocabPicker({ words }: { words: VocabWord[] }) {
     const [selected, setSelected] = useState<Set<number>>(new Set());
     if (words.length === 0) return null;
@@ -329,8 +487,11 @@ export default function SpeakingShow({ prompt, vocab_words }: SpeakingShowProps)
                         {/* Sample answer */}
                         <SampleAnswer url={`/speaking/${prompt.id}/sample`} />
 
-                        {/* Vocab picker — inside the cue card so it's visible before and during recording */}
+                        {/* Vocab picker — user's saved words */}
                         <VocabPicker words={vocab_words} />
+
+                        {/* AI vocab suggestions for this topic */}
+                        <VocabSuggestions promptId={prompt.id} />
                     </div>
 
                     {/* Recording controls */}

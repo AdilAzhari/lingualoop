@@ -271,7 +271,62 @@ export type SpeakingFeedbackProps = {
         dimension_notes: Record<SpeakingDimension, string>;
         headline: { primary: string; secondary: string };
         overall_note: string;
+        collocation_errors: Array<{ original: string; correction: string; note: string }>;
         duration_seconds: number | null;
+        graded_at: string;
+    };
+};
+
+// ── Image Description ────────────────────────────────────────────────
+
+export type ImageDimension = 'task' | 'vocabulary' | 'coherence' | 'accuracy';
+
+export type ImagePromptSummary = {
+    id: number;
+    title: string;
+    type: string;
+    topic: string;
+    level: string;
+    mode: 'writing' | 'speaking' | 'both';
+    target_words: number;
+    best_writing: number | null;
+    best_speaking: number | null;
+};
+
+export type ImageIndexProps = { topics: string[]; types: string[]; prompts: ImagePromptSummary[] };
+
+export type ImageShowProps = {
+    prompt: {
+        id: number;
+        title: string;
+        type: string;
+        topic: string;
+        level: string;
+        task_instruction: string;
+        key_features: string[];
+        mode: 'writing' | 'speaking' | 'both';
+        target_words: number;
+        target_seconds: number;
+    };
+};
+
+export type CollocationError = { original: string; correction: string; note: string };
+
+export type ImageFeedbackProps = {
+    prompt: { id: number; title: string; type: string; topic: string; level: string };
+    session: {
+        id: number;
+        mode: 'writing' | 'speaking';
+        overall: number;
+        text: string | null;
+        transcript: string | null;
+        has_audio: boolean;
+        scores: Record<ImageDimension, number>;
+        dimension_notes: Record<ImageDimension, string>;
+        headline: { primary: string; secondary: string };
+        overall_note: string;
+        collocation_errors: CollocationError[];
+        key_features_missed: string[];
         graded_at: string;
     };
 };
@@ -451,3 +506,68 @@ export type ReadingFeedbackProps = {
         feedback: ReadingQuestionFeedback | null;
     }>;
 };
+
+// ── SE Practice ─────────────────────────────────────────────────────────────
+
+export type SeDimension = 'technical' | 'clarity' | 'completeness' | 'tradeoffs';
+
+export type SePromptSummary = {
+    id: number;
+    title: string;
+    category: string;
+    difficulty: string;
+    mode: string;
+    best_writing: number | null;
+    best_speaking: number | null;
+};
+
+export type SeIndexProps = { prompts: SePromptSummary[]; categories: string[] };
+
+export type SeShowProps = {
+    prompt: {
+        id: number;
+        title: string;
+        category: string;
+        difficulty: string;
+        description: string;
+        context: string | null;
+        key_concepts: string[];
+        framework_hints: string[];
+        mode: 'writing' | 'speaking' | 'both';
+        target_words: number;
+        target_seconds: number;
+    };
+};
+
+export type SeFeedbackProps = {
+    prompt: { id: number; title: string; category: string; difficulty: string };
+    session: {
+        id: number;
+        mode: 'writing' | 'speaking';
+        overall: number;
+        text: string | null;
+        transcript: string | null;
+        has_audio: boolean;
+        scores: Record<SeDimension, number>;
+        dimension_notes: Record<SeDimension, string>;
+        headline: { primary: string; secondary: string };
+        overall_note: string;
+        key_concepts_missed: string[];
+        improvement_tips: string[];
+        graded_at: string;
+    };
+};
+
+export type SeFlashcardItem = {
+    progress_id: number;
+    state: string;
+    id: number;
+    concept: string;
+    category: string;
+    front: string;
+    back: string;
+    example: string | null;
+    gotcha: string | null;
+};
+
+export type SeFlashcardsProps = { cards: SeFlashcardItem[]; total_due: number };

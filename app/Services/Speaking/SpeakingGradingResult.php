@@ -14,17 +14,20 @@ class SpeakingGradingResult
         public array   $headline,
         public string  $overallNote,
         public ?int    $durationSeconds,
+        /** @var array<int,array{original:string,correction:string,note:string}> */
+        public array   $collocationErrors = [],
     ) {}
 
     public static function fromArray(array $data, ?int $durationSeconds = null): self
     {
         return new self(
-            transcript:      $data['transcript']       ?? '',
-            scores:          $data['scores']           ?? ['fluency' => 0, 'vocabulary' => 0, 'grammar' => 0, 'pronunciation' => 0],
-            dimensionNotes:  $data['dimension_notes']  ?? ['fluency' => '', 'vocabulary' => '', 'grammar' => '', 'pronunciation' => ''],
-            headline:        $data['headline']         ?? ['primary' => 'Feedback', 'secondary' => ''],
-            overallNote:     $data['overall_note']     ?? '',
-            durationSeconds: $durationSeconds,
+            transcript:        $data['transcript']        ?? '',
+            scores:            $data['scores']            ?? ['fluency' => 0, 'vocabulary' => 0, 'grammar' => 0, 'pronunciation' => 0],
+            dimensionNotes:    $data['dimension_notes']   ?? ['fluency' => '', 'vocabulary' => '', 'grammar' => '', 'pronunciation' => ''],
+            headline:          $data['headline']          ?? ['primary' => 'Feedback', 'secondary' => ''],
+            overallNote:       $data['overall_note']      ?? '',
+            durationSeconds:   $durationSeconds,
+            collocationErrors: $data['collocation_errors'] ?? [],
         );
     }
 }
