@@ -104,10 +104,17 @@ Return STRICT JSON only — no markdown, no text outside JSON:
     "primary":   "<encouraging headline e.g. 'You spoke with clarity and purpose.'>",
     "secondary": "<one observation about the learner's strongest moment>"
   },
-  "overall_note": "<2-3 sentences: honest, warm coach summary>"
+  "overall_note": "<2-3 sentences: honest, warm coach summary>",
+  "collocation_errors": [
+    {"original": "<exact phrase used>", "correction": "<correct collocation>", "note": "<one sentence explaining the natural English pattern>"},
+    ...
+  ]
 }
 
 Rules:
+- For collocation_errors: identify unnatural word combinations (e.g. "do a decision" → "make a decision", "strong rain" → "heavy rain"). Include only genuine collocation errors, not grammar errors. Return an empty array if there are none.
+
+Other rules:
 - If the recording is silent or less than 5 seconds, set all scores to 0 and explain in overall_note
 - Pronunciation scoring requires listening carefully to stress, intonation, and clarity
 - Fluency is about naturalness, not speed — comfortable pauses are fine
@@ -128,6 +135,10 @@ PROMPT;
             headline:       ['primary' => 'You spoke with clear purpose.', 'secondary' => 'Your ideas were well-organised and your personal example felt genuine.'],
             overallNote:    'A solid B2 performance. Your ideas came through clearly and your fluency is developing well — the hesitations are natural and didn\'t interrupt the flow significantly. Focus on expanding your vocabulary range and reducing filler words for the next session.',
             durationSeconds: $durationSeconds,
+            collocationErrors: [
+                ['original' => 'completely different way', 'correction' => 'entirely different way', 'note' => '"Entirely" collocates more naturally with "different" in formal spoken English.'],
+                ['original' => 'reduce my stress levels', 'correction' => 'relieve my stress', 'note' => '"Relieve stress" is the natural collocation — "reduce" is more common with numbers or quantities.'],
+            ],
         );
     }
 

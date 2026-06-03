@@ -271,7 +271,62 @@ export type SpeakingFeedbackProps = {
         dimension_notes: Record<SpeakingDimension, string>;
         headline: { primary: string; secondary: string };
         overall_note: string;
+        collocation_errors: Array<{ original: string; correction: string; note: string }>;
         duration_seconds: number | null;
+        graded_at: string;
+    };
+};
+
+// ── Image Description ────────────────────────────────────────────────
+
+export type ImageDimension = 'task' | 'vocabulary' | 'coherence' | 'accuracy';
+
+export type ImagePromptSummary = {
+    id: number;
+    title: string;
+    type: string;
+    topic: string;
+    level: string;
+    mode: 'writing' | 'speaking' | 'both';
+    target_words: number;
+    best_writing: number | null;
+    best_speaking: number | null;
+};
+
+export type ImageIndexProps = { topics: string[]; types: string[]; prompts: ImagePromptSummary[] };
+
+export type ImageShowProps = {
+    prompt: {
+        id: number;
+        title: string;
+        type: string;
+        topic: string;
+        level: string;
+        task_instruction: string;
+        key_features: string[];
+        mode: 'writing' | 'speaking' | 'both';
+        target_words: number;
+        target_seconds: number;
+    };
+};
+
+export type CollocationError = { original: string; correction: string; note: string };
+
+export type ImageFeedbackProps = {
+    prompt: { id: number; title: string; type: string; topic: string; level: string };
+    session: {
+        id: number;
+        mode: 'writing' | 'speaking';
+        overall: number;
+        text: string | null;
+        transcript: string | null;
+        has_audio: boolean;
+        scores: Record<ImageDimension, number>;
+        dimension_notes: Record<ImageDimension, string>;
+        headline: { primary: string; secondary: string };
+        overall_note: string;
+        collocation_errors: CollocationError[];
+        key_features_missed: string[];
         graded_at: string;
     };
 };

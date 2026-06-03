@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ComposeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ListeningController;
 use App\Http\Controllers\MockController;
 use App\Http\Controllers\ReadingController;
@@ -44,7 +45,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/speaking/sessions/{session}', [SpeakingController::class, 'session'])->whereNumber('session')->name('speaking.sessions.show');
     Route::get('/speaking/{prompt}', [SpeakingController::class, 'show'])->whereNumber('prompt')->name('speaking.show');
     Route::post('/speaking/{prompt}/sample', [SpeakingController::class, 'sample'])->whereNumber('prompt')->name('speaking.sample');
+    Route::post('/speaking/{prompt}/vocab-suggest', [SpeakingController::class, 'vocabSuggest'])->whereNumber('prompt')->name('speaking.vocab-suggest');
     Route::post('/speaking/{prompt}', [SpeakingController::class, 'store'])->whereNumber('prompt')->name('speaking.store');
+
+    Route::get('/images', [ImageController::class, 'index'])->name('images.index');
+    Route::get('/images/sessions/{session}/audio', [ImageController::class, 'audio'])->whereNumber('session')->name('images.sessions.audio');
+    Route::get('/images/sessions/{session}', [ImageController::class, 'session'])->whereNumber('session')->name('images.sessions.show');
+    Route::get('/images/{prompt}/image', [ImageController::class, 'image'])->whereNumber('prompt')->name('images.image');
+    Route::get('/images/{prompt}', [ImageController::class, 'show'])->whereNumber('prompt')->name('images.show');
+    Route::post('/images/{prompt}/writing', [ImageController::class, 'storeWriting'])->whereNumber('prompt')->name('images.store-writing');
+    Route::post('/images/{prompt}/speaking', [ImageController::class, 'storeSpeaking'])->whereNumber('prompt')->name('images.store-speaking');
 
     Route::get('/listening', [ListeningController::class, 'index'])->name('listening.index');
     Route::get('/listening/sessions/{session}', [ListeningController::class, 'session'])->whereNumber('session')->name('listening.sessions.show');
