@@ -19,7 +19,7 @@ class SeController extends Controller
     public function index(): Response
     {
         $userId  = auth()->id();
-        $prompts = SePrompt::orderByRaw("FIELD(difficulty, 'junior', 'mid', 'senior', 'staff')")->get();
+        $prompts = SePrompt::orderByRaw("CASE difficulty WHEN 'junior' THEN 0 WHEN 'mid' THEN 1 WHEN 'senior' THEN 2 WHEN 'staff' THEN 3 ELSE 4 END")->orderBy('category')->get();
 
         $best = SeSession::where('user_id', $userId)
             ->where('status', 'graded')
@@ -46,6 +46,40 @@ class SeController extends Controller
                 'best_speaking' => $bestByPrompt[$p->id]['speaking'] ?? null,
             ]),
         ]);
+    }
+
+    /** POST /software — create a user-defined prompt */
+    public function storePrompt(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'title'           => 'required|string|max:200',
+            'category'        => 'required|in:system-design,architecture,use-cases,real-world',
+            'difficulty'      => 'required|in:junior,mid,senior,staff',
+            'description'     => 'required|string|max:3000',
+            'context'         => 'nullable|string|max:1000',
+            'key_concepts'    => 'required|string|max:2000',
+            'framework_hints' => 'nullable|string|max:2000',
+            'mode'            => 'required|in:writing,speaking,both',
+            'target_words'    => 'nullable|integer|min:50|max:2000',
+            'target_seconds'  => 'nullable|integer|min:30|max:600',
+        ]);
+
+        $split = static fn (string $s) => array_values(array_filter(array_map('trim', explode("\n", $s))));
+
+        $prompt = SePrompt::create([
+            'title'           => trim($data['title']),
+            'category'        => $data['category'],
+            'difficulty'      => $data['difficulty'],
+            'description'     => trim($data['description']),
+            'context'         => isset($data['context']) ? trim($data['context']) : null,
+            'key_concepts'    => $split($data['key_concepts']),
+            'framework_hints' => isset($data['framework_hints']) ? $split($data['framework_hints']) : [],
+            'mode'            => $data['mode'],
+            'target_words'    => $data['target_words'] ?? 300,
+            'target_seconds'  => $data['target_seconds'] ?? 180,
+        ]);
+
+        return redirect()->route('se.show', $prompt->id);
     }
 
     /** GET /software/{prompt} */

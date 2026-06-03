@@ -4,16 +4,18 @@ import { useDarkMode } from '@/lib/useDarkMode';
 import type { SharedProps } from '@/lib/types';
 
 const NAV = [
-    { label: 'Today',   href: '/' },
-    { label: 'Write',   href: '/compose' },
-    { label: 'Read',    href: '/reading' },
-    { label: 'Listen',  href: '/listening' },
-    { label: 'Speak',   href: '/speaking' },
-    { label: 'Mock',    href: '/mock' },
-    { label: 'Drill',   href: '/drill' },
-    { label: 'Profile', href: '/profile' },
-    { label: 'Vocab',   href: '/vocabulary' },
-    { label: 'Studio',  href: '/dashboard' },
+    { label: 'Today',    href: '/' },
+    { label: 'Write',    href: '/compose' },
+    { label: 'Read',     href: '/reading' },
+    { label: 'Listen',   href: '/listening' },
+    { label: 'Speak',    href: '/speaking' },
+    { label: 'Images',   href: '/images' },
+    { label: 'SE',       href: '/software' },
+    { label: 'Mock',     href: '/mock' },
+    { label: 'Drill',    href: '/drill' },
+    { label: 'Profile',  href: '/profile' },
+    { label: 'Vocab',    href: '/vocabulary' },
+    { label: 'Studio',   href: '/dashboard' },
 ];
 
 function isActive(current: string, href: string): boolean {
