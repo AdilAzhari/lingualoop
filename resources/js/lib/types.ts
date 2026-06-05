@@ -509,6 +509,40 @@ export type ReadingFeedbackProps = {
     }>;
 };
 
+// ── Video Studio ─────────────────────────────────────────────────────────────
+
+export type VideoType     = 'tutorial' | 'talking-head' | 'case-study' | 'shorts';
+export type VideoPlatform = 'youtube' | 'linkedin' | 'tiktok';
+export type VideoDuration = 'short' | 'medium' | 'long';
+export type VideoTone     = 'educational' | 'entertaining' | 'thought-leadership';
+
+export type VideoScriptSummary = {
+    id: number; topic: string; video_type: VideoType;
+    platform: VideoPlatform; status: 'draft' | 'ready'; created_at: string;
+};
+
+export type VideoSection = {
+    title: string; script: string;
+    talking_points: string[]; broll: string; duration_seconds: number;
+};
+
+export type VideoContent = {
+    title: string; hook: string; intro: string;
+    sections: VideoSection[];
+    outro: string;
+    chapters: { time: string; title: string }[];
+    description: string; tags: string[];
+};
+
+export type VideoIndexProps = {
+    scripts: VideoScriptSummary[];
+    loaded_script?: {
+        id: number; topic: string; video_type: VideoType;
+        platform: VideoPlatform; duration: VideoDuration; tone: VideoTone;
+        content: VideoContent;
+    };
+};
+
 // ── Brand Studio ─────────────────────────────────────────────────────────────
 
 export type BrandPostType = 'post' | 'article' | 'carousel';

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\VideoController;
 use App\Http\Controllers\ComposeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ImageController;
@@ -83,6 +84,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/vocabulary', [VocabularyController::class, 'store'])->name('vocabulary.store');
     Route::put('/vocabulary/{entry}', [VocabularyController::class, 'update'])->whereNumber('entry')->name('vocabulary.update');
     Route::delete('/vocabulary/{entry}', [VocabularyController::class, 'destroy'])->name('vocabulary.destroy');
+
+    Route::get('/video', [VideoController::class, 'index'])->name('video.index');
+    Route::post('/video/generate', [VideoController::class, 'generate'])->name('video.generate');
+    Route::get('/video/{script}', [VideoController::class, 'show'])->whereNumber('script')->name('video.show');
+    Route::post('/video', [VideoController::class, 'store'])->name('video.store');
+    Route::put('/video/{script}/status', [VideoController::class, 'updateStatus'])->whereNumber('script')->name('video.status');
+    Route::delete('/video/{script}', [VideoController::class, 'destroy'])->whereNumber('script')->name('video.destroy');
 
     Route::get('/brand', [BrandController::class, 'index'])->name('brand.index');
     Route::post('/brand/generate', [BrandController::class, 'generate'])->name('brand.generate');
