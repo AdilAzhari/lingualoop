@@ -11,6 +11,7 @@ const NAV = [
     { label: 'Speak',    href: '/speaking' },
     { label: 'Images',   href: '/images' },
     { label: 'SE',       href: '/software' },
+    { label: 'Brand',    href: '/brand' },
     { label: 'Mock',     href: '/mock' },
     { label: 'Drill',    href: '/drill' },
     { label: 'Profile',  href: '/profile' },

@@ -509,6 +509,37 @@ export type ReadingFeedbackProps = {
     }>;
 };
 
+// ── Brand Studio ─────────────────────────────────────────────────────────────
+
+export type BrandPostType = 'post' | 'article' | 'carousel';
+export type BrandPostTone = 'thought-leader' | 'educator' | 'storyteller';
+
+export type BrandPostSummary = {
+    id: number;
+    topic: string;
+    type: BrandPostType;
+    tone: BrandPostTone;
+    status: 'draft' | 'ready';
+    created_at: string;
+};
+
+export type BrandPostContent =
+    | { type: 'post';     hooks: string[]; body: string; cta: string; hashtags: string[] }
+    | { type: 'article';  title: string; intro: string; sections: { heading: string; content: string }[]; conclusion: string; key_takeaways: string[]; hashtags: string[] }
+    | { type: 'carousel'; cover: { headline: string; subheadline: string }; slides: { number: number; heading: string; bullets: string[] }[]; cta_slide: { heading: string; action: string }; hashtags: string[] };
+
+export type BrandIndexProps = {
+    drafts: BrandPostSummary[];
+    loaded_post?: {
+        id: number;
+        topic: string;
+        type: BrandPostType;
+        tone: BrandPostTone;
+        context: string | null;
+        content: Record<string, unknown>;
+    };
+};
+
 // ── SE Practice ─────────────────────────────────────────────────────────────
 
 export type SeDimension = 'technical' | 'clarity' | 'completeness' | 'tradeoffs';

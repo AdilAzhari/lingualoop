@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ComposeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ImageController;
@@ -82,6 +83,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/vocabulary', [VocabularyController::class, 'store'])->name('vocabulary.store');
     Route::put('/vocabulary/{entry}', [VocabularyController::class, 'update'])->whereNumber('entry')->name('vocabulary.update');
     Route::delete('/vocabulary/{entry}', [VocabularyController::class, 'destroy'])->name('vocabulary.destroy');
+
+    Route::get('/brand', [BrandController::class, 'index'])->name('brand.index');
+    Route::post('/brand/generate', [BrandController::class, 'generate'])->name('brand.generate');
+    Route::get('/brand/{post}', [BrandController::class, 'show'])->whereNumber('post')->name('brand.show');
+    Route::post('/brand', [BrandController::class, 'store'])->name('brand.store');
+    Route::put('/brand/{post}/status', [BrandController::class, 'updateStatus'])->whereNumber('post')->name('brand.status');
+    Route::delete('/brand/{post}', [BrandController::class, 'destroy'])->whereNumber('post')->name('brand.destroy');
 
     Route::get('/glossary', GlossaryController::class)->name('glossary');
     Route::get('/glossary/json', [GlossaryController::class, 'json'])->name('glossary.json');
